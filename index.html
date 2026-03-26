@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carteira de Investimentos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0b;
+            --surface: #111113;
+            --surface-elevated: #18181b;
+            --border: #27272a;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            --accent: #3b82f6;
+            --positive: #22c55e;
+            --negative: #ef4444;
+            --gold: #eab308;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.25rem;
+        }
+
+        .last-update {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .total-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .total-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .total-change {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .positive { color: var(--positive); }
+        .negative { color: var(--negative); }
+
+        .token-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .token-section label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .token-section input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .token-section input:focus {
+            border-color: var(--accent);
+        }
+
+        .token-section input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .token-section button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .token-section button:hover {
+            opacity: 0.9;
+        }
+
+        .token-info {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--text-muted);
+            background: var(--surface-elevated);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .ticker {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .company-name {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.125rem;
+        }
+
+        .price-change {
+            text-align: right;
+        }
+
+        .current-price {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        .change-percent {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.125rem;
+        }
+
+        .card-body {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .metric-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .position-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .position-change {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .error-state {
+            color: var(--negative);
+            font-size: 0.75rem;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-dot.live {
+            background: var(--positive);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: var(--negative);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.4rem 0.75rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
+
+        .commodity-tag {
+            display: inline-block;
+            padding: 0.125rem 0.375rem;
+            background: rgba(234, 179, 8, 0.15);
+            color: var(--gold);
+            font-size: 0.6rem;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.5rem;
+        }
+
+        footer {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-info {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-right {
+                text-align: left;
+            }
+
+            .token-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>Carteira de Investimentos</h1>
+                <div class="last-update">
+                    <span class="status-dot live" id="statusDot"></span>
+                    <span id="lastUpdate">Carregando...</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="total-label">Patrimônio Total</div>
+                <div class="total-value" id="totalValue">—</div>
+                <div class="total-change" id="totalChange">—</div>
+            </div>
+        </header>
+
+        <div class="token-section">
+            <label>Token brapi.dev:</label>
+            <input type="password" id="apiToken" placeholder="Cole seu token aqui para acessar todos os ativos">
+            <button onclick="saveTokenAndRefresh()">Salvar</button>
+            <span class="token-info" id="tokenStatus">PETR4, VALE3, ITUB4 funcionam sem token</span>
+        </div>
+
+        <div class="grid" id="portfolioGrid">
+            <!-- Cards serão inseridos aqui -->
+        </div>
+
+        <footer>
+            <div class="footer-info">
+                Dados via brapi.dev • Atualização automática a cada 5 minutos
+            </div>
+            <button class="refresh-btn" onclick="refreshData()">↻ Atualizar agora</button>
+        </footer>
+    </div>
+
+    <script>
+        const PORTFOLIO = [
+            { ticker: 'AURA33', name: 'Aura Minerals', avgPrice: 133.48, quantity: 15, commodity: true },
+            { ticker: 'BIAU39', name: 'iShares Gold Trust', avgPrice: 125.69, quantity: 29, commodity: true },
+            { ticker: 'BSLV39', name: 'iShares Silver Trust', avgPrice: 179.85, quantity: 1, commodity: true },
+            { ticker: 'ITUB4', name: 'Itaú Unibanco', avgPrice: 44.82, quantity: 55, commodity: false },
+            { ticker: 'PETR4', name: 'Petrobras', avgPrice: 44.99, quantity: 45, commodity: false },
+            { ticker: 'SUZB3', name: 'Suzano', avgPrice: 51.67, quantity: 10, commodity: false },
+            { ticker: 'VALE3', name: 'Vale', avgPrice: 83.36, quantity: 13, commodity: false }
+        ];
+
+        const FREE_TICKERS = ['PETR4', 'VALE3', 'ITUB4', 'MGLU3'];
+        let currentPrices = {};
+
+        function getToken() {
+            return localStorage.getItem('brapi_token') || '';
+        }
+
+        function saveTokenAndRefresh() {
+            const token = document.getElementById('apiToken').value.trim();
+            if (token) {
+                localStorage.setItem('brapi_token', token);
+            }
+            refreshData();
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        function formatPercent(value) {
+            const sign = value >= 0 ? '+' : '';
+            return sign + value.toFixed(2) + '%';
+        }
+
+        function createCard(asset) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${asset.ticker}`;
+            
+            const commodityTag = asset.commodity ? '<span class="commodity-tag">Commodity</span>' : '';
+            const investedValue = asset.avgPrice * asset.quantity;
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div>
+                        <div class="ticker">${asset.ticker}${commodityTag}</div>
+                        <div class="company-name">${asset.name}</div>
+                    </div>
+                    <div class="price-change">
+                        <div class="current-price loading" id="price-${asset.ticker}">—</div>
+                        <div class="change-percent" id="change-${asset.ticker}">—</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="metric">
+                        <span class="metric-label">Quantidade</span>
+                        <span class="metric-value">${asset.quantity}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Preço Médio</span>
+                        <span class="metric-value">${formatCurrency(asset.avgPrice)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Investido</span>
+                        <span class="metric-value">${formatCurrency(investedValue)}</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="position-value" id="position-${asset.ticker}">—</div>
+                    <div class="position-change" id="pnl-${asset.ticker}">—</div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function renderPortfolio() {
+            const grid = document.getElementById('portfolioGrid');
+            grid.innerHTML = '';
+            PORTFOLIO.forEach(asset => {
+                grid.appendChild(createCard(asset));
+            });
+        }
+
+        async function fetchQuotes(tickers, useToken = false) {
+            const token = getToken();
+            const tickerString = tickers.join(',');
+            const tokenStatusEl = document.getElementById('tokenStatus');
+            
+            let url = `https://brapi.dev/api/quote/${tickerString}`;
+            
+            if (useToken && token) {
+                url += `?token=${encodeURIComponent(token)}`;
+            }
+
+            try {
+                console.log('Fetching:', url.replace(token || '', '***'));
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('API Error:', data.message);
+                    if (useToken && data.message?.includes('token')) {
+                        tokenStatusEl.textContent = '⚠ Token inválido';
+                        tokenStatusEl.style.color = '#ef4444';
+                    }
+                    return { results: [], error: data.message };
+                }
+                
+                if (useToken && data.results?.length > 0) {
+                    tokenStatusEl.textContent = '✓ Token válido';
+                    tokenStatusEl.style.color = '#22c55e';
+                }
+                
+                console.log('Response for', tickerString, ':', data.results?.length || 0, 'results');
+                return { results: data.results || [], error: null };
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return { results: [], error: error.message };
+            }
+        }
+
+        function updateCard(ticker, quote, errorMsg = null) {
+            const priceEl = document.getElementById(`price-${ticker}`);
+            const changeEl = document.getElementById(`change-${ticker}`);
+            const positionEl = document.getElementById(`position-${ticker}`);
+            const pnlEl = document.getElementById(`pnl-${ticker}`);
+
+            if (!quote) {
+                priceEl.textContent = 'Erro';
+                priceEl.classList.add('error-state');
+                priceEl.classList.remove('loading');
+                if (errorMsg && errorMsg.includes('token')) {
+                    changeEl.textContent = 'Token inválido';
+                } else {
+                    changeEl.textContent = 'Token necessário';
+                }
+                return;
+            }
+
+            const asset = PORTFOLIO.find(a => a.ticker === ticker);
+            const currentPrice = quote.regularMarketPrice;
+            const changePercent = quote.regularMarketChangePercent || 0;
+            
+            currentPrices[ticker] = currentPrice;
+
+            const positionValue = currentPrice * asset.quantity;
+            const investedValue = asset.avgPrice * asset.quantity;
+            const pnl = positionValue - investedValue;
+            const pnlPercent = ((currentPrice - asset.avgPrice) / asset.avgPrice) * 100;
+
+            priceEl.textContent = formatCurrency(currentPrice);
+            priceEl.classList.remove('loading');
+            priceEl.classList.remove('error-state');
+
+            changeEl.textContent = formatPercent(changePercent);
+            changeEl.className = 'change-percent ' + (changePercent >= 0 ? 'positive' : 'negative');
+
+            positionEl.textContent = formatCurrency(positionValue);
+            
+            const pnlSign = pnl >= 0 ? '+' : '';
+            pnlEl.textContent = `${pnlSign}${formatCurrency(pnl)} (${formatPercent(pnlPercent)})`;
+            pnlEl.className = 'position-change ' + (pnl >= 0 ? 'positive' : 'negative');
+        }
+
+        function updateTotals() {
+            let totalValue = 0;
+            let totalInvested = 0;
+
+            PORTFOLIO.forEach(asset => {
+                const price = currentPrices[asset.ticker];
+                if (price) {
+                    totalValue += price * asset.quantity;
+                    totalInvested += asset.avgPrice * asset.quantity;
+                }
+            });
+
+            const totalEl = document.getElementById('totalValue');
+            const changeEl = document.getElementById('totalChange');
+
+            if (totalValue > 0) {
+                const totalPnl = totalValue - totalInvested;
+                const totalPnlPercent = ((totalValue - totalInvested) / totalInvested) * 100;
+
+                totalEl.textContent = formatCurrency(totalValue);
+                
+                const sign = totalPnl >= 0 ? '+' : '';
+                changeEl.textContent = `${sign}${formatCurrency(totalPnl)} (${formatPercent(totalPnlPercent)})`;
+                changeEl.className = 'total-change ' + (totalPnl >= 0 ? 'positive' : 'negative');
+            }
+        }
+
+        async function refreshData() {
+            const token = getToken();
+            const updateEl = document.getElementById('lastUpdate');
+            const statusDot = document.getElementById('statusDot');
+
+            updateEl.textContent = 'Atualizando...';
+
+            const freeTickers = PORTFOLIO.filter(a => FREE_TICKERS.includes(a.ticker)).map(a => a.ticker);
+            const paidTickers = PORTFOLIO.filter(a => !FREE_TICKERS.includes(a.ticker)).map(a => a.ticker);
+
+            // Fetch free tickers (no token needed)
+            const freeResponse = await fetchQuotes(freeTickers, false);
+            freeResponse.results.forEach(quote => {
+                if (quote && quote.symbol) {
+                    updateCard(quote.symbol, quote);
+                }
+            });
+
+            // Fetch paid tickers (requires token)
+            if (token && paidTickers.length > 0) {
+                const paidResponse = await fetchQuotes(paidTickers, true);
+                
+                if (paidResponse.error) {
+                    paidTickers.forEach(ticker => {
+                        updateCard(ticker, null, paidResponse.error);
+                    });
+                } else {
+                    paidResponse.results.forEach(quote => {
+                        if (quote && quote.symbol) {
+                            updateCard(quote.symbol, quote);
+                        }
+                    });
+
+                    paidTickers.forEach(ticker => {
+                        if (!paidResponse.results.find(q => q && q.symbol === ticker)) {
+                            updateCard(ticker, null);
+                        }
+                    });
+                }
+            } else {
+                paidTickers.forEach(ticker => {
+                    updateCard(ticker, null);
+                });
+            }
+
+            updateTotals();
+
+            const now = new Date();
+            updateEl.textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            statusDot.className = 'status-dot live';
+        }
+
+        function init() {
+            const savedToken = getToken();
+            if (savedToken) {
+                document.getElementById('apiToken').value = savedToken;
+            }
+
+            renderPortfolio();
+            refreshData();
+
+            setInterval(refreshData, 5 * 60 * 1000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
